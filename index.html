@@ -1,0 +1,925 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QC Master | FoodLine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base Variables - FORCED LIGHT THEME */
+        :root {
+            --bg-color: #ffffff;
+            --card-bg-color: #ffffff;
+            --text-color: #1e293b; /* Slate 800 - dark text for contrast */
+            --text-muted-color: #64748b; /* Slate 500 */
+            --item-bg-color: #ffffff;
+            --item-hover-bg-color: #f9fafb; /* Gray 50 */
+            --border-color: #e2e8f0; /* Slate 200 */
+            --priority-border-color: #fecaca;
+        }
+        
+        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 6rem; transition: background 0.3s ease; }
+        .card { background-color: var(--card-bg-color); border: 1px solid var(--border-color); }
+        
+        /* Checklist Items */
+        .checklist-item { background-color: var(--item-bg-color); border: 1px solid var(--border-color); transition: background 0.2s; }
+        .checklist-item.completed { background-color: #f0fdf4; color: #166534; border-color: #86efac; } /* Light Green */
+
+        .checklist-item.completed .task-text { text-decoration: line-through; }
+        
+        /* Icons */
+        .checkbox-icon { border: 2px solid #cbd5e1; width: 1.5rem; height: 1.5rem; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; margin-right: 0.75rem; flex-shrink: 0; background: white; }
+        .checklist-item.completed .checkbox-icon { background-color: #10b981; border-color: #10b981; }
+        .checklist-item.completed .checkbox-icon::after { content: '✔'; color: white; font-size: 14px; }
+
+        .checklist-item.has-problem { border-color: #ef4444; background-color: #fef2f2; } /* Light Red */
+        .checklist-item.has-info { border-color: #3b82f6; background-color: #eff6ff; } /* Light Blue */
+
+        /* Navigation */
+        .nav-button { background-color: #ffffff; color: #64748b; border: 1px solid #e2e8f0; }
+        .nav-button:hover { background-color: #f8fafc; }
+        .nav-button.active { background-color: #059669; color: white; border-color: #059669; }
+        
+        /* Journal Tabs - UPDATED STYLE */
+        .journal-tab { 
+            border: 1px solid #e2e8f0; 
+            color: #64748b; 
+            background-color: white; 
+            border-radius: 0.5rem;
+            margin: 0 4px;
+        }
+        .journal-tab:hover { color: #334155; background-color: #f8fafc; }
+        .journal-tab.active { 
+            background-color: #059669; /* Full green fill */
+            color: white; 
+            border-color: #059669; 
+            font-weight: bold; 
+        }
+
+        /* Custom Text Colors */
+        .text-custom-orange { color: #ff9021; }
+
+        /* Modals */
+        .modal-overlay { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); z-index: 1000; }
+        
+        .comment-text { font-size: 0.875rem; color: var(--text-muted-color); padding-left: 2.5rem; margin-top: 0.25rem; }
+        .comment-text.alert { color: #dc2626; font-weight: bold; }
+        .comment-text.info { color: #2563eb; font-weight: bold; }
+
+        /* Inputs - Force White */
+        input, select, textarea { background-color: #ffffff !important; color: #1e293b; border: 1px solid #cbd5e1; }
+        
+        /* Ensure checkbox inputs are visible */
+        input[type="checkbox"] { width: 1.25rem; height: 1.25rem; cursor: pointer; accent-color: #16a34a; }
+
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #09f; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast {
+            background: white;
+            border-left: 4px solid #10b981;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            max-width: 300px;
+            border: 1px solid #e2e8f0;
+        }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.show { transform: translateX(0); }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <div class="container mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
+        <header class="mb-6 flex justify-between items-center">
+            <!-- Left Side: Logo & Date -->
+            <div class="flex flex-col items-start">
+                <img src="https://foodline-production.com/wp-content/uploads/2021/10/3752781497_3752781497.webp" alt="Logo" class="h-14 bg-white p-1 rounded mb-1 shadow-sm border border-gray-100" onerror="this.src='https://placehold.co/200x50?text=FoodLine'">
+                <div id="current-date" class="text-xs text-gray-500 font-mono pl-1"></div>
+            </div>
+            
+            <!-- Right Side: Title -->
+            <div class="text-right max-w-[60%]">
+                <h1 class="text-lg sm:text-xl font-bold leading-tight uppercase text-black">
+                    Чек-лист Контролера Якості
+                </h1>
+                <p class="text-xs sm:text-sm text-gray-600 mt-1 font-medium">
+                    Контроль безпечності та якості продукції
+                </p>
+            </div>
+        </header>
+
+        <div class="mb-6 card p-4 rounded-xl shadow-sm">
+            <label class="block text-sm font-bold mb-2">Контролер:</label>
+            <select id="employeeSelect" class="block w-full p-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
+                <option value="">Оберіть зі списку...</option>
+            </select>
+            <p id="employeeSelectionHint" class="text-red-500 text-xs mt-2 hidden font-bold">⚠️ Будь ласка, оберіть своє ім'я!</p>
+        </div>
+
+        <nav class="grid grid-cols-4 gap-2 mb-6">
+            <button data-view="start" class="nav-button active py-2 px-1 rounded-lg font-semibold text-xs sm:text-sm shadow-sm transition-all">Початок<br>(10:00)</button>
+            <button data-view="during" class="nav-button py-2 px-1 rounded-lg font-semibold text-xs sm:text-sm shadow-sm transition-all">Зміна<br>(20:00)</button>
+            <button data-view="end" class="nav-button py-2 px-1 rounded-lg font-semibold text-xs sm:text-sm shadow-sm transition-all">Кінець<br>(20:00)</button>
+            <button data-view="journal" class="nav-button py-2 px-1 rounded-lg font-semibold text-xs sm:text-sm shadow-sm transition-all text-blue-700 border-blue-200 hover:bg-blue-50">📖 Журнал</button>
+        </nav>
+
+        <main>
+            <!-- CHECKLIST SECTIONS -->
+            <section id="startShiftSection" class="view-section">
+                <div class="card p-4 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-emerald-700">Початок зміни</h2>
+                        <button id="resetStartBtn" class="px-3 py-1 bg-white border border-orange-200 text-orange-600 text-sm rounded hover:bg-orange-50 transition-colors">Скинути</button>
+                    </div>
+                    <ul class="space-y-3" id="list-start"></ul>
+                </div>
+            </section>
+
+            <section id="duringShiftSection" class="view-section hidden">
+                <div class="card p-4 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-blue-700">Протягом зміни</h2>
+                        <button id="resetDuringBtn" class="px-3 py-1 bg-white border border-orange-200 text-orange-600 text-sm rounded hover:bg-orange-50 transition-colors">Скинути</button>
+                    </div>
+                    <ul class="space-y-3" id="list-during"></ul>
+                </div>
+            </section>
+
+            <section id="endShiftSection" class="view-section hidden">
+                <div class="card p-4 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-sky-700">Кінець зміни</h2>
+                        <button id="resetEndBtn" class="px-3 py-1 bg-white border border-orange-200 text-orange-600 text-sm rounded hover:bg-orange-50 transition-colors">Скинути</button>
+                    </div>
+                    <ul class="space-y-3" id="list-end"></ul>
+                </div>
+            </section>
+
+            <!-- JOURNAL SECTION -->
+            <section id="journalSection" class="view-section hidden">
+                <div class="card p-4 rounded-2xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">📝 Журнал контролю</h2>
+                        <button id="resetJournalBtn" class="px-3 py-1 bg-white border border-orange-200 text-orange-600 text-sm rounded hover:bg-orange-50 transition-colors">Очистити</button>
+                    </div>
+                    
+                    <div class="flex mb-4">
+                        <button data-jtab="testing" class="journal-tab flex-1 py-2 font-medium transition-colors">🧪 Тестування</button>
+                        <button data-jtab="labeling" class="journal-tab active flex-1 py-2 font-medium transition-colors">🏷️ Етикетування</button>
+                    </div>
+
+                    <!-- Labeling Form -->
+                    <div id="form-labeling" class="space-y-4 animate-fade-in hidden">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-xs font-bold text-gray-500">Час:</label><input type="time" id="lbl-time" class="w-full p-2 rounded"></div>
+                            <div><label class="text-xs font-bold text-gray-500">Машина:</label>
+                                <select id="lbl-machine" class="w-full p-2 rounded">
+                                    <option value="A">Машина А (СК-010)</option>
+                                    <option value="B">Машина В (ALM)</option>
+                                    <option value="C">Машина С (Ротор)</option>
+                                    <option value="D">Машина D (Конус)</option>
+                                    <option value="F">Машина F (Пляшка)</option>
+                                    <option value="E">Ручний датер E</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Added Trademark Selection -->
+                        <div class="bg-white p-3 rounded-lg border border-gray-200">
+                            <label class="block text-xs font-bold text-gray-600 mb-1">1. Оберіть ТМ:</label>
+                            <select id="lbl-tm" class="w-full p-2 rounded border border-gray-300">
+                                <option value="">Оберіть зі списку...</option>
+                            </select>
+                        </div>
+
+                        <!-- Modified Product Selection -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">2. Продукт (Артикул | Назва):</label>
+                            <input type="text" id="lbl-product" list="lbl-product-list" class="w-full p-2 rounded border border-gray-300" placeholder="Спочатку оберіть ТМ..." disabled>
+                            <datalist id="lbl-product-list">
+                                <!-- Options populated by JS -->
+                            </datalist>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-xs font-bold text-gray-500">№ Завдання:</label><input type="number" id="lbl-task" class="w-full p-2 rounded" placeholder="Введіть №"></div>
+                            <div><label class="text-xs font-bold text-gray-500">Сан. стан:</label>
+                                <select id="lbl-sanitary" class="w-full p-2 rounded">
+                                    <option value="" selected disabled>Оберіть стан...</option>
+                                    <option value="Відповідає">✅ Відповідає</option>
+                                    <option value="Не відповідає">❌ Не відповідає</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Green Label Badge -->
+                        <div class="bg-green-600 text-white p-2 rounded text-sm font-bold text-center shadow-sm">Етикетка</div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-xs font-bold text-gray-500">Дата на етикетці:</label><input type="date" id="lbl-label-date" class="w-full p-2 rounded"></div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500">Партія:</label>
+                                <input type="text" id="lbl-label-batch" class="w-full p-2 rounded" placeholder="L..." title="Формат: L...">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mt-2">
+                            <div><label class="text-xs font-bold text-gray-500">Плівка (мм):</label><input type="text" id="lbl-width" class="w-full p-2 rounded" placeholder="400/350"></div>
+                            <div><label class="text-xs font-bold text-gray-500">Т. тунелю (°C):</label><input type="number" id="lbl-temp" class="w-full p-2 rounded" placeholder="185"></div>
+                        </div>
+                        
+                        <!-- Checkboxes with direct handlers -->
+                        <div class="bg-white p-4 rounded-lg space-y-3 mt-2 border border-gray-200">
+                            <label class="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" id="check-pack" class="journal-checkbox"> 
+                                <span class="font-medium">Формування пака</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" id="check-sticker" class="journal-checkbox"> 
+                                <span class="font-medium">Стікер</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" id="check-pallet" class="journal-checkbox"> 
+                                <span class="font-medium">Палета</span>
+                            </label>
+                        </div>
+
+                        <textarea id="lbl-comment" class="w-full p-2 rounded" rows="2" placeholder="Коментар..."></textarea>
+                    </div>
+
+                    <!-- Testing Form -->
+                    <div id="form-testing" class="space-y-3 animate-fade-in">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-xs font-bold text-gray-500">Час:</label><input type="time" id="tst-time" class="w-full p-2 rounded"></div>
+                            <div><label class="text-xs font-bold text-gray-500">Варник:</label><input type="text" id="tst-cookName" class="w-full p-2 rounded"></div>
+                        </div>
+                        
+                        <!-- Updated Product Input with Search -->
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">Продукт:</label>
+                            <input type="text" id="tst-product" list="tst-product-list" class="w-full p-2 rounded" placeholder="Почніть вводити код або назву..." autocomplete="off">
+                            <datalist id="tst-product-list"></datalist>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-xs font-bold text-gray-500">№ Завдання:</label><input type="number" id="tst-task" class="w-full p-2 rounded" placeholder="Введіть №"></div>
+                            <div><label class="text-xs font-bold text-gray-500">Дата варки:</label><input type="date" id="tst-cookDate" class="w-full p-2 rounded"></div>
+                        </div>
+                        
+                        <!-- Updated Colors for Headers -->
+                        <div class="bg-white p-2 rounded text-sm font-bold text-center border border-gray-200 text-custom-orange">Органолептика</div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <select id="tst-color" class="p-2 rounded"><option value="+">Колір: ОК</option><option value="-">Колір: Брак</option></select>
+                            <select id="tst-aroma" class="p-2 rounded"><option value="+">Аромат: ОК</option><option value="-">Аромат: Брак</option></select>
+                            <select id="tst-taste" class="p-2 rounded"><option value="+">Смак: ОК</option><option value="-">Смак: Брак</option></select>
+                            <select id="tst-consist" class="p-2 rounded"><option value="+">Консист: ОК</option><option value="-">Консист: Брак</option></select>
+                        </div>
+                        
+                        <!-- Updated Colors for Headers -->
+                        <div class="bg-white p-2 rounded text-sm font-bold text-center border border-gray-200 text-custom-orange">Фізико-хімія</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-xs text-gray-500">Сухі (%):</label><input type="number" step="0.1" id="tst-dry" class="w-full p-2 rounded"></div>
+                            <div><label class="text-xs text-gray-500">В'язкість:</label><input type="text" id="tst-visc" class="w-full p-2 rounded"></div>
+                            <div><label class="text-xs text-gray-500">pH:</label><input type="number" step="0.01" id="tst-ph" class="w-full p-2 rounded"></div>
+                            <div><label class="text-xs text-gray-500">Кислотність (%):</label><input type="text" id="tst-acid" class="w-full p-2 rounded" placeholder="Титрована"></div>
+                        </div>
+                        <div><label class="text-xs text-gray-500">Стійкість:</label><select id="tst-stab" class="w-full p-2 rounded"><option value="+">Стійка (+)</option><option value="-">Не стійка (-)</option></select></div>
+                    </div>
+
+                    <button id="submitJournalBtn" class="w-full bg-green-600 text-white font-bold py-4 rounded-lg mt-4 shadow-md hover:bg-green-700 active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg">
+                        🚀 ВІДПРАВИТИ ДАНІ
+                    </button>
+                    <p id="journalStatusMsg" class="text-center mt-2 text-sm font-bold"></p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="commentModal" class="fixed inset-0 hidden items-center justify-center modal-overlay">
+        <div class="card p-6 rounded-2xl shadow-xl w-80 bg-white border border-gray-100">
+            <h3 class="text-lg font-bold mb-2">Коментар</h3>
+            <textarea id="commentInput" class="w-full p-2 border rounded" rows="3"></textarea>
+            <div class="flex justify-end gap-2 mt-4">
+                <button class="px-3 py-1 bg-white border border-gray-300 rounded text-sm hover:bg-gray-50 text-black transition-colors" onclick="closeModal('commentModal')">Скасувати</button>
+                <button id="saveCommentBtn" class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors">Зберегти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Confirm Modal -->
+    <div id="genericConfirmModal" class="fixed inset-0 hidden items-center justify-center modal-overlay z-50">
+        <div class="card p-6 rounded-2xl shadow-xl w-80 bg-white border border-gray-100">
+            <h3 class="text-lg font-bold mb-2 text-center" id="genericConfirmTitle">Підтвердження</h3>
+            <p id="genericConfirmText" class="text-center mb-4 text-sm text-gray-600"></p>
+            <div class="flex justify-center gap-3">
+                <button id="genericConfirmCancel" class="px-4 py-2 bg-white border border-gray-300 rounded hover:bg-gray-50 text-gray-800 font-medium transition-colors">Ні</button>
+                <button id="genericConfirmOk" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors">Так</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION & SEND MODAL -->
+    <div id="confirmationModal" class="fixed inset-0 hidden items-center justify-center modal-overlay z-50">
+        <div class="card p-6 rounded-2xl shadow-xl w-full max-w-md m-4 flex flex-col max-h-[90vh] bg-white border border-gray-100">
+            <h3 class="text-xl font-bold mb-4 text-center">Підтвердження відправки</h3>
+            <p class="text-sm text-gray-500 mb-2">Перевірте дані:</p>
+            <div class="bg-white text-gray-900 p-4 rounded-lg overflow-y-auto mb-4 border border-gray-200 text-sm font-mono whitespace-pre-wrap flex-1 shadow-inner" id="confirmationText"></div>
+            <div id="modalSpinner" class="spinner hidden mb-4"></div>
+            <p id="sendMsg" class="text-center text-sm font-bold mb-2"></p>
+            <div id="modalActions" class="flex flex-col gap-2">
+                <button id="confirmSendBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow transition-colors flex items-center justify-center gap-2">✅ Підтвердити та Надіслати</button>
+                <button onclick="closeModal('confirmationModal')" class="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-bold py-3 rounded-lg transition-colors">❌ Скасувати</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Progress -->
+    <div id="footerStatus" class="fixed bottom-0 left-0 right-0 card p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] flex items-center justify-between z-40 border-t border-gray-100">
+        <div class="w-full">
+            <div class="w-full bg-gray-100 rounded-full h-2.5 mb-1">
+                <div id="progressBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p id="progressText" class="text-xs text-right text-gray-500">0/0</p>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwb6BjHF4hMVfXe7lQBeFkTkvdeBSHXF1k3n3-DSg8SNflZla7LJPGoJtnKlb0Lx1eM-w/exec";
+
+        // TESTING PRODUCTS LIST (Data for Datalist)
+        const testingProducts = [
+            "1101 Соєвий Bonsai", "1102 Соєвий Bonsai Prem", "1103 Соєвий YKI", "1104 Соєвий Bonsai Prof",
+            "1105 Соєвий Чумак", "1106 Соєвий METRO Chef", "1107 ТАМАРИ Bonsai", "1108 Теріякі Bonsai",
+            "1109 УНАГІ Bonsai", "1110 ЯКІТОРІ Bonsai", "1111 Теріякі Bonsai Prem", "1112 Теріякі густий YKI",
+            "1113 Теріякі з медом Bonsai", "1114 Теріякі рідкий YKI", "1115 Теріякі Чумак", "1116 Для Суши Bonsai",
+            "1117 Бальзамик Bonsai Prem", "1118 Горіховий Bonsai Prem", "1119 Соєвий Bonsai Prof (Custom Edition)", "1120 Для Суши Bonsai Prem",
+            "1121 Соєвий (O)", "1122 Соєвий Ketjap", "1123 Устричний Bonsai", "1124 Соєвий Солодкий Теріякі",
+            "1125 Соус соєвий Теріякі SESAME & GINGER PERI PERI", "1126 Соус соєвий Теріякі SWEET CHILI PERI PERI",
+            "1127 Соус соєвий Унагі SWEET & SOUR PERI PERI", "1128 Соус соєвий SOY & WHEAT PERI PERI", "1129 Маринад соєвий №1",
+            "1130 Маринад соєвий №7", "1131 Соус Теріякі Домінос", "1132 Соус соєвий /(Суши Тайм)", "1133 Соєвий густий",
+            "1134 Соус соєвий_PL", "1201 Кисло-солодкий Peri Peri", "1202 Гостро-солодкий Peri Peri", "1203 Журавлинний Peri Peri",
+            "1204 Ожиновий Peri Peri", "1205 Hot Chili PL", "1206 Sweet Chili Peri Peri, Bonsai Prem", "1207 Гранатовий Наршараб Peri Peri",
+            "1208 Для ЛокшиниWOK Peri Peri", "1209 Жовто-гарячий Peri Peri", "1210 Солодкий Чилі YKI", "1211 Манго-Чилі Peri Peri",
+            "1212 Пряні трави Peri Peri", "1213 Солодкий Чилі Чумак", "1214 Солодкий Чилі Bonsai", "1216 Солодкий Чилі(SE) Bonsai Prem",
+            "1217 Sweet Chili PL (PD)", "1218 Sweet Chili PL", "1219 Ткемалі Peri Peri", "1220 Кімчі Premium", "1221 Сацебелі Peri Peri",
+            "1301 Аризона Барбекю Peri Peri", "1302 Болоньезе Peri Peri", "1303 З в’яленими томатами Peri Peri", "1304 Кетчуп Peri Peri",
+            "1305 Болоньєзе YKI", "1307 Для ПІЦИ Bonsai Prof", "1308 Кетчуп Лагідний YKI", "1310 Кетчуп Чілі YKI",
+            "1312 PL_Соус Томатний (PD)", "1314 PL_Соус №95 Томатний", "1315 PL_Томатна паста 1000 гр", "1401 Original Salateria",
+            "1402 Бальзаміко Fresh Salateria", "1403 З кунжутною олією Salateria", "1404 З кунжутом Salateria", "1405 Медово-гірчична Fresh Salateria",
+            "1501 Кунжутний PP, BProf, Salat", "1502 Сирний Bonsai Prof", "1503 Тартар Peri Peri", "1504 Цезар Peri Peri",
+            "1505 Сирний Bonsai Prof, Peri Peri", "1506 ПЕСТО ROSSO", "1507 ПЕСТО", "1508 ПЕСТО PL", "1509 Майонез original 73%",
+            "1510 PL_Вершковий (PD)", "1601 Наповнювач Вишневий PL", "1602 Наповнювач Лісова ягода PL", "1701 Концентрований компот яблучно-грушевий",
+            "1702 Концентрований компот яблучно-вишневий", "1703 Концентрований компот яблучно-малиновий", "1704 Концентрований компот абрикосово-персиковий",
+            "1801 В’ялені томати"
+        ];
+
+        const productDatabase = {
+            "Bonsai": [
+                {id: "3102", name: "Bonsai соус соєвий Класичний 235 мл"},
+                {id: "3103", name: "Bonsai соус соєвий Класичний 500 мл"},
+                {id: "3115", name: "Bonsai соус соєвий 750 мл"},
+                {id: "3104", name: "Bonsai соус соєвий Класичний 890 мл"},
+                {id: "3101", name: "Bonsai соус соєвий Класичний 1000 мл (20531)"},
+                {id: "3108", name: "Bonsai соус соєвий ТЕРІЯКІ з часником та имбирем (густий) 235 мл"},
+                {id: "3109", name: "Bonsai соус соєвий УНАГІ кисло-солодкий (Густий) 240 мл"},
+                {id: "3105", name: "Bonsai соус соєвий ДЛЯ СУШІ з водоростями КОМБУ 235 мл"},
+                {id: "3111", name: "Bonsai соус соєвий ЯКІТОРІ з устрицями та кунжутом (густий) 235 мл"},
+                {id: "3106", name: "Bonsai соус соєвий ТАМАРІ з натур. медом 235 мл"},
+                {id: "3112", name: "Bonsai соус солодкий Теріякі 235 мл"},
+                {id: "3113", name: "Bonsai соус солодкий Чилі 235 мл"}
+            ],
+            "6 ЛІТРІВ": [
+                {id: "1", name: "6 ЛІТРІВ концентрований компот абрикосово-персиковий 1000 мл"},
+                {id: "2", name: "6 ЛІТРІВ концентрований компот яблучно-вишневий 1000 мл"},
+                {id: "3", name: "6 ЛІТРІВ концентрований компот яблучно-грушевий 1000 мл"},
+                {id: "4", name: "6 ЛІТРІВ концентрований компот яблучно-малиновий 1000 мл"}
+            ],
+            "Salateria": [
+                {id: "31001", name: "Salateria Fresh Салатна заправка Медово-Гірчична 335 г"},
+                {id: "31002", name: "Salateria Fresh Салатна заправка Цезар 320 г"},
+                {id: "31003", name: "Salateria Fresh Салатна заправка Бальзаміко 335 г"},
+                {id: "3501", name: "Salateria Салатна заправка Original 360 г"},
+                {id: "3502", name: "Salateria Салатна заправка бальзамічна 360 г"},
+                {id: "3503", name: "Salateria Салатна заправка КУНЖУТНА 320 г"},
+                {id: "3504", name: "Salateria Салатна заправка соєва з кунжутною олією 360 г"},
+                {id: "3505", name: "Salateria Салатна заправка гірчично-медова 360 г"}
+            ],
+            "Peri": [
+                 {id: "000", name: "Peri соус ПЕСТО ROSSO 200 г"}
+            ],
+            "YKI": [
+                 {id: "Y001", name: "YKI Соус Чилі 200г"}
+            ]
+        };
+
+        const checklistItems = {
+            start: [
+                { id: 'start-1-1', text: 'Лабораторія та ваги: Перевірити чистоту та справність.', type: 'normal' },
+                { id: 'start-1-2', text: 'Охолодження (Нічні варки): Перевірити t ≤ 24°C.', type: 'problem', btn: '⚠️ Відхилення', fields: ['№ Котла', '№ Завдання', 'Соус', 'Темп °C'] },
+                { id: 'start-1-3', text: 'Якість попередніх варок: Фіз-хім та органолептика.', type: 'problem', btn: '⛔ НЕДОПУСК', fields: ['№ Завдання', 'Соус', 'Причина'] },
+                { id: 'start-1-4', text: 'Фільтри: Перевірити журнал заміни фільтрів.', type: 'normal' },
+                { id: 'start-1-5', text: 'Видача консервантів: Видати варникам під підпис.', type: 'info', btn: '📝 Записати', fields: ['Варник (ПІБ)', 'Консервант', 'Кількість'] },
+            ],
+            during: [
+                { id: 'during-1-1', text: 'Гігієна персоналу: Одяг, шапочки, прикраси.', type: 'normal' },
+                { id: 'during-1-2', text: 'Підготовка сировини: Перевірка відповідності.', type: 'normal' },
+                { id: 'during-1-3', text: 'Водопідготовка (ХВО): Експрес-тест показників.', type: 'problem', btn: '⚠️ Відхилення', fields: ['Показник', 'Значення'] },
+                { id: 'during-1-4', text: 'Безпечність процесу: Поточний контроль.', type: 'problem', btn: '⚠️ Проблема', fields: ['Опис порушення'] },
+                { id: 'during-1-5', text: 'Додаткові завдання керівника.', type: 'normal' },
+            ],
+            end: [
+                { id: 'end-1-1', text: 'Контроль варок перед охолодженням: Заміри для ВСІХ варок.', type: 'normal' },
+                { id: 'end-1-2', text: 'Повернення ТМЦ: Повернути консерванти в лабораторію.', type: 'normal' },
+                { id: 'end-1-3', text: 'Санітарний стан: Перевірка стану цеху.', type: 'problem', btn: '⚠️ Незадовільно', fields: ['Опис проблеми/дільниця'] },
+                { id: 'end-1-4', text: 'Звітність: Заповнення звіту про недоліки.', type: 'normal' },
+                { id: 'end-1-5', text: 'Цілісність скла та пластику: Перевірка відсутності бою.', type: 'normal' },
+            ]
+        };
+
+        const employees = ["Соботович Л.М.", "Огаркова М.В.", "Інший"];
+        let currentJournalTab = 'testing';
+        let currentChecklistTab = 'start';
+        let activeCommentId = null;
+        let pendingReportData = null;
+        let confirmCallback = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
+
+        // --- CUSTOM TOAST & CONFIRM ---
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function customConfirm(text, onConfirm) {
+            document.getElementById('genericConfirmText').innerText = text;
+            document.getElementById('genericConfirmModal').style.display = 'flex';
+            confirmCallback = onConfirm;
+        }
+
+        document.getElementById('genericConfirmCancel').addEventListener('click', () => {
+            document.getElementById('genericConfirmModal').style.display = 'none';
+            confirmCallback = null;
+        });
+
+        document.getElementById('genericConfirmOk').addEventListener('click', () => {
+            if(confirmCallback) confirmCallback();
+            document.getElementById('genericConfirmModal').style.display = 'none';
+            confirmCallback = null;
+        });
+
+        function initApp() {
+            const sel = document.getElementById('employeeSelect');
+            employees.forEach(e => sel.add(new Option(e, e)));
+
+            const now = new Date();
+            const options = { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' };
+            document.getElementById('current-date').innerText = new Intl.DateTimeFormat('uk-UA', options).format(now);
+            
+            document.getElementById('lbl-time').value = now.toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('tst-time').value = now.toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('tst-cookDate').valueAsDate = now;
+            document.getElementById('lbl-label-date').valueAsDate = now;
+
+            const tmSelect = document.getElementById('lbl-tm');
+            Object.keys(productDatabase).forEach(tm => {
+                tmSelect.add(new Option(tm, tm));
+            });
+
+            tmSelect.addEventListener('change', (e) => {
+                updateProductList(e.target.value);
+            });
+
+            // NEW: Populate Testing Products with Datalist
+            const tstList = document.getElementById('tst-product-list');
+            testingProducts.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod;
+                tstList.appendChild(option);
+            });
+
+            // NEW: Auto-prefix 'L' for batch
+            const batchInput = document.getElementById('lbl-label-batch');
+            batchInput.addEventListener('blur', function() {
+                if(this.value && !this.value.trim().toUpperCase().startsWith('L')) {
+                    this.value = 'L' + this.value.trim();
+                    saveState(); // Ensure this change is saved to local storage
+                }
+            });
+
+            renderChecklist('start');
+            renderChecklist('during');
+            renderChecklist('end');
+
+            loadState();
+            
+            document.body.addEventListener('click', handleClick);
+            document.body.addEventListener('change', handleInput);
+            
+            document.querySelectorAll('.journal-checkbox').forEach(cb => {
+                cb.addEventListener('click', (e) => {
+                    const emp = document.getElementById('employeeSelect').value;
+                    if(!emp) {
+                        e.preventDefault();
+                        showToast("⚠️ Оберіть ім'я контролера!", true);
+                    }
+                });
+            });
+
+            switchJournalTab(currentJournalTab);
+        }
+
+        function updateProductList(tm) {
+            const list = document.getElementById('lbl-product-list');
+            const input = document.getElementById('lbl-product');
+            
+            list.innerHTML = '';
+            input.value = '';
+
+            if (tm && productDatabase[tm]) {
+                input.disabled = false;
+                input.placeholder = "Введіть артикул або назву...";
+                productDatabase[tm].forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = `${p.id} | ${p.name}`;
+                    list.appendChild(option);
+                });
+            } else {
+                input.disabled = true;
+                input.placeholder = "Спочатку оберіть ТМ...";
+            }
+        }
+
+        function renderChecklist(section) {
+            const ul = document.getElementById(`list-${section}`);
+            ul.innerHTML = checklistItems[section].map(item => {
+                let actionBtn = `<button class="action-btn ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors" data-id="${item.id}" data-type="comment" title="Коментар">💬</button>`;
+                let formHtml = '';
+
+                if (item.type !== 'normal') {
+                    actionBtn = `<button class="action-btn ml-2 px-2 py-1 rounded text-xs font-bold flex items-center gap-1 ${item.type === 'info' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'}" data-id="${item.id}" data-type="form">${item.btn}</button>`;
+                    const inputs = item.fields.map((f, i) => `<input type="text" data-field="${i}" class="w-full p-1 border rounded text-xs mb-2" placeholder="${f}">`).join('');
+                    formHtml = `<div id="form-${item.id}" class="hidden mt-2 p-2 border rounded bg-white"><div class="text-xs font-bold mb-2">${item.btn}:</div>${inputs}<div class="flex justify-end gap-2"><button class="form-cancel px-2 py-1 bg-white border border-gray-300 rounded text-xs hover:bg-gray-50 text-black" data-id="${item.id}">Скасувати</button><button class="form-save px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700" data-id="${item.id}">Зберегти</button></div></div>`;
+                }
+                return `<li id="${item.id}" class="checklist-item p-3 rounded-lg flex flex-col shadow-sm"><div class="flex items-center justify-between w-full"><div class="flex items-center flex-1 cursor-pointer check-trigger select-none" data-id="${item.id}"><div class="checkbox-icon"></div><span class="task-text text-sm">${item.text}</span></div>${actionBtn}</div>${formHtml}<div class="comment-text hidden text-xs italic mt-1"></div></li>`;
+            }).join('');
+        }
+
+        function handleClick(e) {
+            if (e.target.closest('.nav-button')) {
+                const view = e.target.closest('.nav-button').dataset.view;
+                switchView(view);
+            }
+            if (e.target.id === 'resetStartBtn') resetSection('startShiftSection');
+            if (e.target.id === 'resetDuringBtn') resetSection('duringShiftSection');
+            if (e.target.id === 'resetEndBtn') resetSection('endShiftSection');
+            if (e.target.id === 'resetJournalBtn') resetSection('journalSection');
+
+            if (e.target.closest('.check-trigger')) {
+                if (!validateEmployee()) return;
+                const id = e.target.closest('.check-trigger').dataset.id;
+                toggleItem(id);
+            }
+
+            if (e.target.closest('.action-btn')) {
+                e.stopPropagation();
+                if (!validateEmployee()) return;
+                const btn = e.target.closest('.action-btn');
+                const id = btn.dataset.id;
+                if (btn.dataset.type === 'form') {
+                    document.getElementById(`form-${id}`).classList.toggle('hidden');
+                } else {
+                    activeCommentId = id;
+                    document.getElementById('commentInput').value = document.querySelector(`#${id} .comment-text`).innerText;
+                    document.getElementById('commentModal').style.display = 'flex';
+                }
+            }
+
+            if (e.target.classList.contains('form-cancel')) document.getElementById(`form-${e.target.dataset.id}`).classList.add('hidden');
+            if (e.target.classList.contains('form-save')) saveForm(e.target.dataset.id);
+            if (e.target.classList.contains('journal-tab')) switchJournalTab(e.target.dataset.jtab);
+            if (e.target.id === 'submitJournalBtn') prepareJournalReport();
+            if (e.target.id === 'saveCommentBtn') saveComment();
+            if (e.target.id === 'confirmSendBtn') executeSend();
+        }
+
+        function handleInput(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+                saveState();
+            }
+        }
+
+        function validateEmployee() {
+            if (!document.getElementById('employeeSelect').value) {
+                showToast("🔴 БУДЬ ЛАСКА, ОБЕРІТЬ ІМ'Я КОНТРОЛЕРА!", true);
+                document.getElementById('employeeSelectionHint').classList.remove('hidden');
+                window.scrollTo(0,0);
+                return false;
+            }
+            document.getElementById('employeeSelectionHint').classList.add('hidden');
+            return true;
+        }
+
+        function toggleItem(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('completed');
+            if (el.classList.contains('completed')) {
+                el.classList.remove('has-problem', 'has-info');
+                const c = el.querySelector('.comment-text');
+                c.innerText = ''; c.classList.add('hidden', 'alert', 'info');
+                const f = document.getElementById(`form-${id}`);
+                if(f) f.classList.add('hidden');
+            }
+            saveState();
+            updateProgress();
+        }
+
+        function saveForm(id) {
+            const form = document.getElementById(`form-${id}`);
+            const inputs = form.querySelectorAll('input');
+            const vals = Array.from(inputs).map(i => i.value);
+            if (vals.some(v => !v)) { showToast("Заповніть всі поля!", true); return; }
+            
+            const item = document.getElementById(id);
+            const isInfo = item.innerHTML.includes('bg-blue-50');
+            const c = item.querySelector('.comment-text');
+            c.innerText = vals.join(' | ');
+            c.classList.remove('hidden', 'alert', 'info');
+            c.classList.add(isInfo ? 'info' : 'alert');
+            
+            item.classList.remove('has-problem', 'has-info');
+            item.classList.add(isInfo ? 'has-info' : 'has-problem');
+            item.classList.add('completed');
+            
+            form.classList.add('hidden');
+            saveState();
+            updateProgress();
+        }
+
+        function saveComment() {
+            const txt = document.getElementById('commentInput').value;
+            const item = document.getElementById(activeCommentId);
+            const c = item.querySelector('.comment-text');
+            c.innerText = txt;
+            if(txt) { c.classList.remove('hidden'); item.classList.add('has-info'); }
+            else { c.classList.add('hidden'); item.classList.remove('has-info'); }
+            closeModal('commentModal');
+            saveState();
+        }
+
+        function updateProgress() {
+            if (['journal', 'contacts'].includes(currentChecklistTab)) return;
+            const list = document.getElementById(`list-${currentChecklistTab}`);
+            const total = list.children.length;
+            const done = list.querySelectorAll('.completed').length;
+            document.getElementById('progressBar').style.width = `${(done/total)*100}%`;
+            document.getElementById('progressText').innerText = `${done}/${total}`;
+            if (total > 0 && done === total) prepareChecklistReport(currentChecklistTab);
+        }
+
+        function switchView(view) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active', 'ring-2'));
+            
+            if (view === 'journal') {
+                document.getElementById('journalSection').classList.remove('hidden');
+                document.querySelector('[data-view="journal"]').classList.add('active', 'ring-2');
+                document.getElementById('footerStatus').style.display = 'none';
+                currentChecklistTab = 'journal';
+                switchJournalTab(currentJournalTab);
+            } else {
+                document.getElementById(`${view}ShiftSection`).classList.remove('hidden');
+                document.querySelector(`[data-view="${view}"]`).classList.add('active', 'ring-2');
+                document.getElementById('footerStatus').style.display = 'flex';
+                currentChecklistTab = view;
+                updateProgress();
+            }
+        }
+
+        function switchJournalTab(tab) {
+            currentJournalTab = tab;
+            document.querySelectorAll('.journal-tab').forEach(b => b.classList.remove('active', 'text-gray-500'));
+            document.querySelector(`[data-jtab="${tab}"]`).classList.add('active');
+            
+            document.getElementById('form-labeling').classList.add('hidden');
+            document.getElementById('form-testing').classList.add('hidden');
+            document.getElementById(`form-${tab}`).classList.remove('hidden');
+        }
+
+        function resetSection(sectionId) {
+            customConfirm('⚠️ Очистити цей розділ?', () => {
+                const section = document.getElementById(sectionId);
+                
+                if(sectionId === 'journalSection') {
+                    section.querySelectorAll('input:not([type="time"]), textarea, select').forEach(el => {
+                        if(el.type === 'checkbox') el.checked = false;
+                        else el.value = '';
+                    });
+                } else {
+                    section.querySelectorAll('.checklist-item').forEach(el => {
+                        el.classList.remove('completed', 'has-problem', 'has-info');
+                        const c = el.querySelector('.comment-text');
+                        if(c) { c.innerText = ''; c.classList.add('hidden', 'alert', 'info'); }
+                        el.querySelectorAll('input').forEach(i => i.value = '');
+                        const f = el.querySelector('[id^="form-"]');
+                        if(f) f.classList.add('hidden');
+                    });
+                }
+                saveState();
+                updateProgress();
+                showToast("Розділ очищено");
+            });
+        }
+
+        function prepareJournalReport() {
+            if(!validateEmployee()) return;
+            
+            let report = "", sectionName = "";
+            if (currentJournalTab === 'labeling') {
+                sectionName = "Журнал: Етикетування";
+                const tm = document.getElementById('lbl-tm').value;
+                report = `Час: ${document.getElementById('lbl-time').value}\nМашина: ${document.getElementById('lbl-machine').value}\nТМ: ${tm}\nПродукт: ${document.getElementById('lbl-product').value}\nЗавдання: ${document.getElementById('lbl-task').value}\nСан.стан: ${document.getElementById('lbl-sanitary').value}\nДата етикетки: ${document.getElementById('lbl-label-date').value}\nПартія: ${document.getElementById('lbl-label-batch').value}\nПлівка: ${document.getElementById('lbl-width').value}\nТемп: ${document.getElementById('lbl-temp').value}\nПак: ${document.getElementById('check-pack').checked ? '+' : '-'}\nСтікер: ${document.getElementById('check-sticker').checked ? '+' : '-'}\nПалета: ${document.getElementById('check-pallet').checked ? '+' : '-'}\nКоментар: ${document.getElementById('lbl-comment').value}`;
+            } else {
+                sectionName = "Журнал: Тестування";
+                report = `Час: ${document.getElementById('tst-time').value}\nВарник: ${document.getElementById('tst-cookName').value}\nПродукт: ${document.getElementById('tst-product').value}\nЗавдання: ${document.getElementById('tst-task').value}\nДата варки: ${document.getElementById('tst-cookDate').value}\nКолір: ${document.getElementById('tst-color').value}\nСмак: ${document.getElementById('tst-taste').value}\nСухі: ${document.getElementById('tst-dry').value}%\npH: ${document.getElementById('tst-ph').value}\nКислотність: ${document.getElementById('tst-acid').value}`;
+            }
+
+            pendingReportData = {
+                time: new Date().toLocaleTimeString('uk-UA'),
+                employee: document.getElementById('employeeSelect').value,
+                section: sectionName,
+                report: report
+            };
+            showConfirmation(report);
+        }
+
+        function prepareChecklistReport(key) {
+            let report = "";
+            document.getElementById(`list-${key}`).querySelectorAll('.checklist-item').forEach(item => {
+                const text = item.querySelector('.task-text').innerText;
+                const status = item.classList.contains('completed') ? (item.classList.contains('has-problem') ? "⚠️ ПРОБЛЕМА" : "✅ ОК") : "❌";
+                const comment = item.querySelector('.comment-text').innerText;
+                report += `${text}: ${status} ${comment ? '('+comment+')' : ''}\n`;
+            });
+            pendingReportData = {
+                time: new Date().toLocaleTimeString('uk-UA'),
+                employee: document.getElementById('employeeSelect').value,
+                section: `Чек-лист: ${key}`,
+                report: report
+            };
+            showConfirmation(report);
+        }
+
+        function showConfirmation(text) {
+            document.getElementById('confirmationText').innerText = text;
+            document.getElementById('confirmationModal').style.display = 'flex';
+            document.getElementById('modalActions').style.display = 'flex';
+            document.getElementById('modalSpinner').classList.add('hidden');
+            document.getElementById('sendMsg').innerText = "";
+        }
+
+        async function executeSend() {
+            document.getElementById('modalActions').style.display = 'none';
+            document.getElementById('modalSpinner').classList.remove('hidden');
+            document.getElementById('sendMsg').innerText = "Відправка...";
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(pendingReportData)
+                });
+                document.getElementById('sendMsg').innerText = "✅ Дані відправлено!";
+            } catch (e) {
+                console.error(e);
+                document.getElementById('sendMsg').innerText = "❌ Помилка відправки (скрипт).";
+            }
+
+            const subject = encodeURIComponent(`${pendingReportData.section} - ${pendingReportData.employee}`);
+            const body = encodeURIComponent(pendingReportData.report);
+            
+            setTimeout(() => {
+                const mailtoLink = `mailto:Dyndarnastia@gmail.com,Buznitskiy7@gmail.com?subject=${subject}&body=${body}`;
+                const link = document.createElement('a');
+                link.href = mailtoLink;
+                link.click();
+
+                setTimeout(() => closeModal('confirmationModal'), 2000);
+            }, 1000);
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function saveState() {
+            const state = {
+                employee: document.getElementById('employeeSelect').value,
+                items: {},
+                inputs: {}
+            };
+            document.querySelectorAll('.checklist-item').forEach(el => {
+                state.items[el.id] = {
+                    completed: el.classList.contains('completed'),
+                    problem: el.classList.contains('has-problem'),
+                    info: el.classList.contains('has-info'),
+                    comment: el.querySelector('.comment-text').innerText
+                };
+            });
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                if (el.id) state.inputs[el.id] = (el.type === 'checkbox') ? el.checked : el.value;
+            });
+            localStorage.setItem('qcState_v27', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const raw = localStorage.getItem('qcState_v27');
+            if (!raw) return;
+            const state = JSON.parse(raw);
+            if (state.employee) {
+                document.getElementById('employeeSelect').value = state.employee;
+                document.getElementById('employeeSelectionHint').classList.add('hidden');
+            }
+            if (state.items) {
+                Object.keys(state.items).forEach(id => {
+                    const el = document.getElementById(id);
+                    const s = state.items[id];
+                    if (el && s) {
+                        if(s.completed) el.classList.add('completed');
+                        if(s.problem) { el.classList.add('has-problem'); el.querySelector('.comment-text').classList.add('alert'); }
+                        if(s.info) { el.classList.add('has-info'); el.querySelector('.comment-text').classList.add('info'); }
+                        if(s.comment) {
+                            el.querySelector('.comment-text').innerText = s.comment;
+                            el.querySelector('.comment-text').classList.remove('hidden');
+                        }
+                    }
+                });
+            }
+            if (state.inputs) {
+                Object.keys(state.inputs).forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) {
+                        if (el.type === 'checkbox') el.checked = state.inputs[id];
+                        else el.value = state.inputs[id];
+                    }
+                });
+                
+                const tmVal = state.inputs['lbl-tm'];
+                if(tmVal) {
+                   updateProductList(tmVal);
+                   if(state.inputs['lbl-product']) {
+                       document.getElementById('lbl-product').value = state.inputs['lbl-product'];
+                   }
+                }
+            }
+        }
+        
+        /* === GOOGLE APPS SCRIPT CODE (BACKEND) ===
+        Якщо ви хочете, щоб дані падали в Google Таблицю, створіть скрипт:
+        
+        function doPost(e) {
+            try {
+                var data = JSON.parse(e.postData.contents);
+                var sheet = SpreadsheetApp.openById("ID_ВАШОЇ_ТАБЛИЦІ").getSheetByName("Logs");
+                // Додаємо: Час створення, Час звіту, Співробітник, Розділ, Текст звіту
+                sheet.appendRow([new Date(), data.time, data.employee, data.section, data.report]);
+                return ContentService.createTextOutput("Success");
+            } catch (error) {
+                return ContentService.createTextOutput("Error: " + error.message);
+            }
+        }
+        */
+    </script>
+</body>
+</html>
