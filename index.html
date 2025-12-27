@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -203,9 +202,9 @@
                             </div>
                         </div>
                         
-                        <!-- Added Trademark Selection -->
-                        <div class="bg-white p-3 rounded-lg border border-gray-200">
-                            <label class="block text-xs font-bold text-gray-600 mb-1">1. Оберіть ТМ:</label>
+                        <!-- Added Trademark Selection (Border Removed) -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">1. Оберіть ТМ:</label>
                             <select id="lbl-tm" class="w-full p-2 rounded border border-gray-300">
                                 <option value="">Оберіть зі списку...</option>
                             </select>
@@ -222,7 +221,7 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="text-xs font-bold text-gray-500">№ Завдання:</label><input type="number" id="lbl-task" class="w-full p-2 rounded" placeholder="Введіть №"></div>
-                            <div><label class="text-xs font-bold text-gray-500">Сан. стан:</label>
+                            <div><label class="text-xs font-bold text-gray-500">Чистота і сан. стан продукції:</label>
                                 <select id="lbl-sanitary" class="w-full p-2 rounded">
                                     <option value="" selected disabled>Оберіть стан...</option>
                                     <option value="Відповідає">✅ Відповідає</option>
@@ -231,8 +230,7 @@
                             </div>
                         </div>
                         
-                        <!-- Green Label Badge -->
-                        <div class="bg-green-600 text-white p-2 rounded text-sm font-bold text-center shadow-sm">Етикетка</div>
+                        <!-- Removed Label Badge -->
                         
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="text-xs font-bold text-gray-500">Дата на етикетці:</label><input type="date" id="lbl-label-date" class="w-full p-2 rounded"></div>
@@ -251,15 +249,23 @@
                         <div class="bg-white p-4 rounded-lg space-y-3 mt-2 border border-gray-200">
                             <label class="flex items-center gap-3 cursor-pointer select-none">
                                 <input type="checkbox" id="check-pack" class="journal-checkbox"> 
-                                <span class="font-medium">Формування пака</span>
+                                <span class="font-medium">Відповідність формування пака</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer select-none">
                                 <input type="checkbox" id="check-sticker" class="journal-checkbox"> 
-                                <span class="font-medium">Стікер</span>
+                                <span class="font-medium">Відповідність стікера і його розташування</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer select-none">
                                 <input type="checkbox" id="check-pallet" class="journal-checkbox"> 
-                                <span class="font-medium">Палета</span>
+                                <span class="font-medium">Відповідність палетування</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" id="check-layout" class="journal-checkbox"> 
+                                <span class="font-medium">Відповідність розкладки на ряду</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" id="check-label-applied" class="journal-checkbox"> 
+                                <span class="font-medium">Відповідність нанесеної етикетки</span>
                             </label>
                         </div>
 
@@ -270,13 +276,23 @@
                     <div id="form-testing" class="space-y-3 animate-fade-in">
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="text-xs font-bold text-gray-500">Час:</label><input type="time" id="tst-time" class="w-full p-2 rounded"></div>
-                            <div><label class="text-xs font-bold text-gray-500">Варник:</label><input type="text" id="tst-cookName" class="w-full p-2 rounded"></div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500">Варник:</label>
+                                <select id="tst-cookName" class="w-full p-2 rounded">
+                                    <option value="">Оберіть зі списку...</option>
+                                    <option value="Загура Іван Борисович">Загура Іван Борисович</option>
+                                    <option value="Солдатова Ірина Володимирівна">Солдатова Ірина Володимирівна</option>
+                                    <option value="Садиріна Ольга Анатоліївна">Садиріна Ольга Анатоліївна</option>
+                                    <option value="Козурак Іван Миколайович">Козурак Іван Миколайович</option>
+                                    <option value="Кораблін Дмитро Русланович">Кораблін Дмитро Русланович</option>
+                                </select>
+                            </div>
                         </div>
                         
-                        <!-- Updated Product Input with Search -->
+                        <!-- Single Product Input with Full List for Testing -->
                         <div>
-                            <label class="text-xs font-bold text-gray-500">Продукт:</label>
-                            <input type="text" id="tst-product" list="tst-product-list" class="w-full p-2 rounded" placeholder="Почніть вводити код або назву..." autocomplete="off">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Продукт (Код | Назва):</label>
+                            <input type="text" id="tst-product" list="tst-product-list" class="w-full p-2 rounded border border-gray-300" placeholder="Введіть код або назву..." autocomplete="off">
                             <datalist id="tst-product-list"></datalist>
                         </div>
 
@@ -285,24 +301,46 @@
                             <div><label class="text-xs font-bold text-gray-500">Дата варки:</label><input type="date" id="tst-cookDate" class="w-full p-2 rounded"></div>
                         </div>
                         
-                        <!-- Updated Colors for Headers -->
-                        <div class="bg-white p-2 rounded text-sm font-bold text-center border border-gray-200 text-custom-orange">Органолептика</div>
+                        <!-- Updated Colors for Headers (Orange Background) -->
+                        <div class="bg-orange-500 text-white p-2 rounded text-sm font-bold text-center shadow-sm">Органолептика</div>
                         <div class="grid grid-cols-2 gap-3 text-sm">
-                            <select id="tst-color" class="p-2 rounded"><option value="+">Колір: ОК</option><option value="-">Колір: Брак</option></select>
-                            <select id="tst-aroma" class="p-2 rounded"><option value="+">Аромат: ОК</option><option value="-">Аромат: Брак</option></select>
-                            <select id="tst-taste" class="p-2 rounded"><option value="+">Смак: ОК</option><option value="-">Смак: Брак</option></select>
-                            <select id="tst-consist" class="p-2 rounded"><option value="+">Консист: ОК</option><option value="-">Консист: Брак</option></select>
+                            <select id="tst-color" class="p-2 rounded">
+                                <option value="" selected disabled>Колір...</option>
+                                <option value="+">Колір: ОК</option>
+                                <option value="-">Колір: Брак</option>
+                            </select>
+                            <select id="tst-aroma" class="p-2 rounded">
+                                <option value="" selected disabled>Аромат...</option>
+                                <option value="+">Аромат: ОК</option>
+                                <option value="-">Аромат: Брак</option>
+                            </select>
+                            <select id="tst-taste" class="p-2 rounded">
+                                <option value="" selected disabled>Смак...</option>
+                                <option value="+">Смак: ОК</option>
+                                <option value="-">Смак: Брак</option>
+                            </select>
+                            <select id="tst-consist" class="p-2 rounded">
+                                <option value="" selected disabled>Консист...</option>
+                                <option value="+">Консист: ОК</option>
+                                <option value="-">Консист: Брак</option>
+                            </select>
                         </div>
                         
-                        <!-- Updated Colors for Headers -->
-                        <div class="bg-white p-2 rounded text-sm font-bold text-center border border-gray-200 text-custom-orange">Фізико-хімія</div>
+                        <!-- Updated Colors for Headers (Orange Background) -->
+                        <div class="bg-orange-500 text-white p-2 rounded text-sm font-bold text-center shadow-sm">Фізико-хімія</div>
                         <div class="grid grid-cols-2 gap-3">
                             <div><label class="text-xs text-gray-500">Сухі (%):</label><input type="number" step="0.1" id="tst-dry" class="w-full p-2 rounded"></div>
                             <div><label class="text-xs text-gray-500">В'язкість:</label><input type="text" id="tst-visc" class="w-full p-2 rounded"></div>
                             <div><label class="text-xs text-gray-500">pH:</label><input type="number" step="0.01" id="tst-ph" class="w-full p-2 rounded"></div>
-                            <div><label class="text-xs text-gray-500">Кислотність (%):</label><input type="text" id="tst-acid" class="w-full p-2 rounded" placeholder="Титрована"></div>
+                            <div>
+                                <label class="text-xs text-gray-500">Стійкість:</label>
+                                <select id="tst-stab" class="w-full p-2 rounded">
+                                    <option value="" selected disabled>Оберіть...</option>
+                                    <option value="+">Стійка (+)</option>
+                                    <option value="-">Не стійка (-)</option>
+                                </select>
+                            </div>
                         </div>
-                        <div><label class="text-xs text-gray-500">Стійкість:</label><select id="tst-stab" class="w-full p-2 rounded"><option value="+">Стійка (+)</option><option value="-">Не стійка (-)</option></select></div>
                     </div>
 
                     <button id="submitJournalBtn" class="w-full bg-green-600 text-white font-bold py-4 rounded-lg mt-4 shadow-md hover:bg-green-700 active:scale-95 transition-transform flex items-center justify-center gap-2 text-lg">
@@ -406,7 +444,73 @@
                 {id: "3111", name: "Bonsai соус соєвий ЯКІТОРІ з устрицями та кунжутом (густий) 235 мл"},
                 {id: "3106", name: "Bonsai соус соєвий ТАМАРІ з натур. медом 235 мл"},
                 {id: "3112", name: "Bonsai соус солодкий Теріякі 235 мл"},
-                {id: "3113", name: "Bonsai соус солодкий Чилі 235 мл"}
+                {id: "3113", name: "Bonsai соус Солодкий Чилі 260 гр"},
+                {id: "3110", name: "Bonsai соус соєвий УНАГІ кисло-солодкий 500 мл"},
+                {id: "3116", name: "Bonsai соус соєвий Теріякі 500 мл"},
+                {id: "3107", name: "Bonsai соус соєвий ТЕРІЯКІ з натуральним медом 500 мл"},
+                {id: "3114", name: "Bonsai соус Солодкий Чилі 550 гр"},
+                {id: "3120", name: "Bonsai соус соєвий Класичний (густий) дой-пак 200 гр"},
+                {id: "3117", name: "Bonsai соус соєвий ТЕРІЯКІ з часником та имбирем (густий) дой-пак 200 гр"},
+                {id: "3119", name: "Bonsai соус соєвий УНАГІ кисло-солодкий (густий) дой-пак 200 гр"},
+                {id: "3118", name: "Bonsai соус солодкий Теріякі (густий) дой-пак 200 гр"},
+                {id: "3121", name: "Bonsai соус Солодкий Чилі (густий) дой-пак 200гр"}
+            ],
+            "Bonsai Premium": [
+                {id: "3202", name: "Bonsai Premium соус cоєвий Ketjap Manis 570 г"},
+                {id: "3201", name: "Bonsai Premium соус cоєвий Бальзамічний 250 мл"},
+                {id: "3203", name: "Bonsai Premium соус cоєвий Класичний 1000 мл"},
+                {id: "3211", name: "Bonsai Premium соус cоєвий Класичний 20 л"},
+                {id: "3204", name: "Bonsai Premium соус cоєвий Класичний 250 мл"},
+                {id: "3205", name: "Bonsai Premium соус cоєвий Теріякі 250 мл"},
+                {id: "3206", name: "Bonsai Premium соус ГОРІХОВИЙ 500 гр"},
+                {id: "3207", name: "Bonsai Premium соус Гранатовий (НАРШАРАБ) 350гр"},
+                {id: "3209", name: "Bonsai Premium соус НАРШАРАБ 1300 гр"},
+                {id: "3208", name: "Bonsai Premium соус солодкий чилі 1100 гр"}
+            ],
+            "Bonsai Professional": [
+                {id: "3305", name: "Bonsai professional соус БОЛОНЬЄЗЕ (Італ. кухня) 1000 мл"},
+                {id: "3301", name: "Bonsai professional соус ГОСТРО-СОЛОДКИЙ (Китай. кухня) 1000 мл"},
+                {id: "3307", name: "Bonsai professional соус Для піци 1000 гр"},
+                {id: "3308", name: "Bonsai professional соус КИСЛО-СОЛОДКИЙ (Китай. кухня) 1000 мл"},
+                {id: "3309", name: "Bonsai professional соус Кімчі 1100 гр"},
+                {id: "3310", name: "Bonsai professional соус КУНЖУТНИЙ (густий) 1000 мл"},
+                {id: "3311", name: "Bonsai professional соус Сирний 1 кг/відро"},
+                {id: "3312", name: "Bonsai professional соус соєвий Класичний 1000 мл (концентрат 1:1)"},
+                {id: "3313", name: "Bonsai professional соус соєвий класичний 5000 мл ПЕТ (Концентрат 1:1)"},
+                {id: "3314", name: "Bonsai professional соус соєвий Класичний каністра 20 л New"},
+                {id: "3315", name: "Bonsai professional соус соєвий ТЕРІЯКІ (густий) 1000 мл"},
+                {id: "3316", name: "Bonsai professional соус соєвий ЯКІТОРІ (густий) 1000 мл"},
+                {id: "3317", name: "Bonsai professional соус солодкий ТЕРІЯКІ (густий) 1000 мл"},
+                {id: "3318", name: "Bonsai professional соус Солодкий Чилі 5700 гр ПЕТ"},
+                {id: "3319", name: "Bonsai professional соус УНАГІ (густий) 1000 мл"},
+                {id: "3320", name: "Bonsai professional Соус УСТРИЧНИЙ (густий) 1000 мл"}
+            ],
+            "Peri Peri": [
+                {id: "3401", name: "Peri Peri соус Аризона BBQ (Американська кухня) 320 г"},
+                {id: "3402", name: "Peri Peri соус Болоньєзе (Італ.кухня) 310 г"},
+                {id: "3403", name: "Peri Peri соус Гостро-солодкий (Китай.кухня) 320 г"},
+                {id: "3404", name: "Peri Peri соус Гранатовий (НАРШАРАБ) 255 г"},
+                {id: "3405", name: "Peri Peri соус для Локшини WOK (Кантонська кухня) 320 г"},
+                {id: "3425", name: "Peri Peri соус Жовто-гарячий (Тайська кухня) 310 г"},
+                {id: "3426", name: "Peri Peri соус Журавлинний (Англійська кухня) 330 г"},
+                {id: "3406", name: "Peri Peri соус З в’яленими томатами (Італійська кухня) 310 г"},
+                {id: "3407", name: "Peri Peri соус Кетчуп (Американська кухня) 320 г"},
+                {id: "3408", name: "Peri Peri соус Кисло-солодкий (Китай.кухня) 320 г"},
+                {id: "3409", name: "Peri Peri соус Кунжутний (Японська кухня) 310 г"},
+                {id: "3410", name: "Peri Peri соус Манго-Чилі (Тайська кухня) 320 г"},
+                {id: "3411", name: "Peri Peri соус Ожиновий з перцем Халапеньйо (Мексиканська кухня) 330 г"},
+                {id: "3424", name: "Peri Peri соус Цезар (Американська кухня) 300 г"},
+                {id: "3422", name: "Peri Peri соус Ткемалі (Грузинська кухня) 320 г"},
+                {id: "3414", name: "Peri Peri соус Пряні трави (Італійська кухня) 310 г"},
+                {id: "3415", name: "Peri Peri соус Сацебелі (Грузинська кухня) 320 г"},
+                {id: "3418", name: "Peri Peri соус Солодкий-Чилі (Тайська кухня) 320 г"},
+                {id: "3419", name: "Peri Peri соус ТАРТАР (Французька кухня) 280 г"},
+                {id: "3420", name: "Peri Peri соус ТЕРІЯКІ sesame & ginger 180 мл"},
+                {id: "3421", name: "Peri Peri соус ТЕРІЯКІ sweet chili 180 мл"},
+                {id: "3417", name: "Peri Peri соус соєвий soy & wheat 180 мл"},
+                {id: "3423", name: "Peri Peri соус УНАГІ sweet & sour 180 мл"},
+                {id: "3412", name: "Peri Peri соус ПЕСТО 200 г"},
+                {id: "3413", name: "Peri Peri соус ПЕСТО ROSSO 200 г"}
             ],
             "6 ЛІТРІВ": [
                 {id: "1", name: "6 ЛІТРІВ концентрований компот абрикосово-персиковий 1000 мл"},
@@ -422,41 +526,54 @@
                 {id: "3502", name: "Salateria Салатна заправка бальзамічна 360 г"},
                 {id: "3503", name: "Salateria Салатна заправка КУНЖУТНА 320 г"},
                 {id: "3504", name: "Salateria Салатна заправка соєва з кунжутною олією 360 г"},
-                {id: "3505", name: "Salateria Салатна заправка гірчично-медова 360 г"}
+                {id: "3505", name: "Salateria Салатна заправка соєва з кунжутом 360 г"}
             ],
-            "Peri": [
-                 {id: "000", name: "Peri соус ПЕСТО ROSSO 200 г"}
+            "Special Edition": [
+                {id: "3141", name: "SOY SAUCE соус соєвий Класичний special edition 1000 мл"}
             ],
             "YKI": [
-                 {id: "Y001", name: "YKI Соус Чилі 200г"}
+                {id: "3601", name: "YKI соус cоєвий 1000 мл"},
+                {id: "3602", name: "YKI соус cоєвий 205 мл"},
+                {id: "3603", name: "YKI соус cоєвий 470 мл"},
+                {id: "3604", name: "YKI соус cоєвий 890 мл"},
+                {id: "3605", name: "YKI соус Болоньєзе (Італійська кухня) 220 гр"},
+                {id: "3606", name: "YKI соус Болоньєзе (Італійська кухня) 530 гр"},
+                {id: "3607", name: "YKI соус Гостро-солодкий (Китайська кухня) 525 гр"},
+                {id: "3608", name: "YKI соус Кисло-солодкий (Китайська кухня) 525 гр"},
+                {id: "3609", name: "YKI соус соєвий ТЕРІЯКІ (густий) 205 мл"},
+                {id: "3610", name: "YKI соус соєвий ТЕРІЯКІ 205 мл"},
+                {id: "3611", name: "YKI соус соєвий ТЕРІЯКІ з часником та імбиром (густий) 470 мл"},
+                {id: "3612", name: "YKI соус соєвий УНАГІ 205 мл"},
+                {id: "3614", name: "YKI соус Солодкий Чилі 225 гр"},
+                {id: "3613", name: "YKI соус Солодкий-Чилі (Тайська кухня) 540 гр"}
             ]
         };
 
         const checklistItems = {
             start: [
-                { id: 'start-1-1', text: 'Лабораторія та ваги: Перевірити чистоту та справність.', type: 'normal' },
-                { id: 'start-1-2', text: 'Охолодження (Нічні варки): Перевірити t ≤ 24°C.', type: 'problem', btn: '⚠️ Відхилення', fields: ['№ Котла', '№ Завдання', 'Соус', 'Темп °C'] },
-                { id: 'start-1-3', text: 'Якість попередніх варок: Фіз-хім та органолептика.', type: 'problem', btn: '⛔ НЕДОПУСК', fields: ['№ Завдання', 'Соус', 'Причина'] },
-                { id: 'start-1-4', text: 'Фільтри: Перевірити журнал заміни фільтрів.', type: 'normal' },
-                { id: 'start-1-5', text: 'Видача консервантів: Видати варникам під підпис.', type: 'info', btn: '📝 Записати', fields: ['Варник (ПІБ)', 'Консервант', 'Кількість'] },
+                { id: 'start-1-1', text: 'Перевірити чистоту та справність обладнання в лабораторії.', type: 'normal' },
+                { id: 'start-1-2', text: 'Перевірити температуру охолодження нічних варок (t ≤ 24°C).', type: 'problem', btn: '⚠️ Відхилення', fields: ['№ Котла', '№ Завдання', 'Соус', 'Темп °C'] },
+                { id: 'start-1-3', text: 'Перевірити якість попередніх варок (фіз-хім та органолептика).', type: 'problem', btn: '⛔ НЕДОПУСК', fields: ['№ Завдання', 'Соус', 'Причина'] },
+                { id: 'start-1-4', text: 'Перевірити журнал заміни фільтрів ВК-1.', type: 'normal' },
+                { id: 'start-1-5', text: 'Видати необхідні консерванти варникам під підпис.', type: 'info', btn: '📝 Записати', fields: ['Варник (ПІБ)', 'Консервант', 'Кількість'] },
             ],
             during: [
-                { id: 'during-1-1', text: 'Гігієна персоналу: Одяг, шапочки, прикраси.', type: 'normal' },
-                { id: 'during-1-2', text: 'Підготовка сировини: Перевірка відповідності.', type: 'normal' },
-                { id: 'during-1-3', text: 'Водопідготовка (ХВО): Експрес-тест показників.', type: 'problem', btn: '⚠️ Відхилення', fields: ['Показник', 'Значення'] },
-                { id: 'during-1-4', text: 'Безпечність процесу: Поточний контроль.', type: 'problem', btn: '⚠️ Проблема', fields: ['Опис порушення'] },
-                { id: 'during-1-5', text: 'Додаткові завдання керівника.', type: 'normal' },
+                { id: 'during-1-1', text: 'Перевірити гігієну персоналу (одяг, шапочки, прикраси).', type: 'normal' },
+                { id: 'during-1-2', text: 'Перевірити підготовку сировини для варок на відповідність.', type: 'normal' },
+                { id: 'during-1-3', text: 'Провести експрес-тести показників водопідготовки (ХВО).', type: 'problem', btn: '⚠️ Відхилення', fields: ['Показник', 'Значення'] },
+                { id: 'during-1-4', text: 'Провести поточний контроль безпечності процесу виробництва.', type: 'problem', btn: '⚠️ Проблема', fields: ['Опис порушення'] },
+                { id: 'during-1-5', text: 'Виконати додаткові завдання керівника.', type: 'normal' },
             ],
             end: [
-                { id: 'end-1-1', text: 'Контроль варок перед охолодженням: Заміри для ВСІХ варок.', type: 'normal' },
-                { id: 'end-1-2', text: 'Повернення ТМЦ: Повернути консерванти в лабораторію.', type: 'normal' },
-                { id: 'end-1-3', text: 'Санітарний стан: Перевірка стану цеху.', type: 'problem', btn: '⚠️ Незадовільно', fields: ['Опис проблеми/дільниця'] },
-                { id: 'end-1-4', text: 'Звітність: Заповнення звіту про недоліки.', type: 'normal' },
-                { id: 'end-1-5', text: 'Цілісність скла та пластику: Перевірка відсутності бою.', type: 'normal' },
+                { id: 'end-1-1', text: 'Провести необхідні заміри для ВСІХ варок перед охолодженням.', type: 'normal' },
+                { id: 'end-1-2', text: 'Повернути залишки консервантів та інших ТМЦ в лабораторію.', type: 'normal' },
+                { id: 'end-1-3', text: 'Перевірити санітарний стан цеху.', type: 'problem', btn: '⚠️ Незадовільно', fields: ['Опис проблеми/дільниця'] },
+                { id: 'end-1-4', text: 'Заповнити звіт про недоліки та результати зміни.', type: 'normal' },
+                { id: 'end-1-5', text: 'Перевірити цілісність скла та пластику (відсутність бою).', type: 'normal' },
             ]
         };
 
-        const employees = ["Соботович Л.М.", "Огаркова М.В.", "Інший"];
+        const employees = ["Соботович Л.М.", "Огаркова М.В."];
         let currentJournalTab = 'testing';
         let currentChecklistTab = 'start';
         let activeCommentId = null;
@@ -513,6 +630,7 @@
             document.getElementById('lbl-label-date').valueAsDate = now;
 
             const tmSelect = document.getElementById('lbl-tm');
+            
             Object.keys(productDatabase).forEach(tm => {
                 tmSelect.add(new Option(tm, tm));
             });
@@ -769,10 +887,12 @@
             if (currentJournalTab === 'labeling') {
                 sectionName = "Журнал: Етикетування";
                 const tm = document.getElementById('lbl-tm').value;
-                report = `Час: ${document.getElementById('lbl-time').value}\nМашина: ${document.getElementById('lbl-machine').value}\nТМ: ${tm}\nПродукт: ${document.getElementById('lbl-product').value}\nЗавдання: ${document.getElementById('lbl-task').value}\nСан.стан: ${document.getElementById('lbl-sanitary').value}\nДата етикетки: ${document.getElementById('lbl-label-date').value}\nПартія: ${document.getElementById('lbl-label-batch').value}\nПлівка: ${document.getElementById('lbl-width').value}\nТемп: ${document.getElementById('lbl-temp').value}\nПак: ${document.getElementById('check-pack').checked ? '+' : '-'}\nСтікер: ${document.getElementById('check-sticker').checked ? '+' : '-'}\nПалета: ${document.getElementById('check-pallet').checked ? '+' : '-'}\nКоментар: ${document.getElementById('lbl-comment').value}`;
+                report = `Час: ${document.getElementById('lbl-time').value}\nМашина: ${document.getElementById('lbl-machine').value}\nТМ: ${tm}\nПродукт: ${document.getElementById('lbl-product').value}\nЗавдання: ${document.getElementById('lbl-task').value}\nСан.стан: ${document.getElementById('lbl-sanitary').value}\nДата етикетки: ${document.getElementById('lbl-label-date').value}\nПартія: ${document.getElementById('lbl-label-batch').value}\nПлівка: ${document.getElementById('lbl-width').value}\nТемп: ${document.getElementById('lbl-temp').value}\nПак: ${document.getElementById('check-pack').checked ? '+' : '-'}\nСтікер: ${document.getElementById('check-sticker').checked ? '+' : '-'}\nПалета: ${document.getElementById('check-pallet').checked ? '+' : '-'}\nРозкладка: ${document.getElementById('check-layout').checked ? '+' : '-'}\nЕтикетка нан.: ${document.getElementById('check-label-applied').checked ? '+' : '-'}\nКоментар: ${document.getElementById('lbl-comment').value}`;
             } else {
                 sectionName = "Журнал: Тестування";
-                report = `Час: ${document.getElementById('tst-time').value}\nВарник: ${document.getElementById('tst-cookName').value}\nПродукт: ${document.getElementById('tst-product').value}\nЗавдання: ${document.getElementById('tst-task').value}\nДата варки: ${document.getElementById('tst-cookDate').value}\nКолір: ${document.getElementById('tst-color').value}\nСмак: ${document.getElementById('tst-taste').value}\nСухі: ${document.getElementById('tst-dry').value}%\npH: ${document.getElementById('tst-ph').value}\nКислотність: ${document.getElementById('tst-acid').value}`;
+                // Removed TM from report since it's removed from UI
+                // Removed Acid from report
+                report = `Час: ${document.getElementById('tst-time').value}\nВарник: ${document.getElementById('tst-cookName').value}\nПродукт: ${document.getElementById('tst-product').value}\nЗавдання: ${document.getElementById('tst-task').value}\nДата варки: ${document.getElementById('tst-cookDate').value}\nКолір: ${document.getElementById('tst-color').value}\nСмак: ${document.getElementById('tst-taste').value}\nСухі: ${document.getElementById('tst-dry').value}%\npH: ${document.getElementById('tst-ph').value}\nСтійкість: ${document.getElementById('tst-stab').value}`;
             }
 
             pendingReportData = {
